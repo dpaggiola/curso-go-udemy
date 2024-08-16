@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"strconv"
 
 	"rsc.io/quote"
 )
@@ -12,8 +13,8 @@ const Pi = 3.14
 const (
 	x = 100
 	y = 0b1010 // binario
-	z = 0o12 // octal
-	w = 0xFF // hexadecimal
+	z = 0o12   // octal
+	w = 0xFF   // hexadecimal
 )
 
 const (
@@ -28,7 +29,7 @@ const (
 
 func main() {
 	fmt.Println("Hola Mundo")
-	fmt.Println(quote.Hello())
+	fmt.Println(quote.Go())
 
 	fmt.Println(math.MinInt64, math.MaxInt64)
 
@@ -46,10 +47,10 @@ func main() {
 	fmt.Println(r)
 
 	var (
-		defaultInt int
-		defaultUint uint
-		defaultFloat float32
-		defaultBool bool
+		defaultInt    int
+		defaultUint   uint
+		defaultFloat  float32
+		defaultBool   bool
 		defaultString string
 	)
 
@@ -81,4 +82,36 @@ func main() {
 	fmt.Println(x, y, z, w)
 	fmt.Println(Viernes)
 
+	var integer16 int16 = 50
+	var integer32 int32 = 100
+
+	fmt.Println(int32(integer16) + integer32)
+
+	st := "100"
+	iv, _ := strconv.Atoi(st)
+
+	fmt.Println(iv + 1)
+
+	n := 42
+	st = strconv.Itoa(n)
+	fmt.Println(st + st)
+
+	name1 := "Alex"
+	age1 := 28
+
+	fmt.Printf("Hola, me llamo %s y tengo %d años. \n", name1, age1)
+
+	greeting := fmt.Sprintf("Hola, me llamo %s y tengo %d años. \n", name1, age1)
+
+	fmt.Println(greeting)
+
+	var name2 string
+	var age2 int
+
+	fmt.Println("Ingrese su nombre: ")
+	fmt.Scanln(&name2)
+	fmt.Println("Ingrese su edad: ")
+	fmt.Scanln(&age2)
+
+	fmt.Printf("Hola, te llamas %s y tienes %d años. \n", name2, age2)
 }
