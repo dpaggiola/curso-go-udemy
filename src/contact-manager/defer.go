@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func main() {
+func deferFunc() {
 	file, err := os.Create("hola.txt")
 	if err != nil {
 		fmt.Println(err)
