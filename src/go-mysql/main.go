@@ -1,24 +1,33 @@
 package main
 
 import (
-	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
+	"go-mysql/database"
+	"go-mysql/handlers"
+	"go-mysql/models"
 	"log"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
-	dns := "daniel:rootroot@tcp(localhost:3306)/db_contacts"
-
-	// Abrir una conexión a la base de datos
-	db, err := sql.Open("mysql", dns)
+	// Establecer conexión a la base de datos
+	db, err := database.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Verificar la conexión
-	if err := db.Ping(); err != nil {
-		log.Fatal(err)
+	defer db.Close()
+
+	// Crear una instancia de Contact
+	newContact := models.Contact{
+		Name: "Nuevo Usuario",
+		Email: "nuevo@example.com",
+		Phone: "091 235 634",
 	}
 
-	log.Println("Conexión a la base de datos MySQL exitosa")
+	handlers.CreateContact(db, newContact)
+
+	handlers.ListContacts(db)
+
+	// handlers.GetContactByID(db, 2)
 }
