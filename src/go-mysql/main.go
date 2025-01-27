@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"go-mysql/database"
 	"go-mysql/handlers"
 	"go-mysql/models"
 	"log"
+	"os"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -18,16 +22,75 @@ func main() {
 
 	defer db.Close()
 
-	// Crear una instancia de Contact
-	newContact := models.Contact{
-		Name: "Nuevo Usuario",
-		Email: "nuevo@example.com",
-		Phone: "091 235 634",
+	for {
+		fmt.Println("\nMenú:")
+		fmt.Println("1. Listar contactos")
+		fmt.Println("2. Obtener contacto por ID")
+		fmt.Println("3. Crear nuevo contacto")
+		fmt.Println("4. Actualizar contacto")
+		fmt.Println("5. Eliminar contacto")
+		fmt.Println("6. Salir")
+		fmt.Println("Seleccione una opción: ")
+
+		var option int
+		fmt.Scanln(&option)
+
+		switch option {
+		case 1:
+			handlers.ListContacts(db)
+		case 2:
+			fmt.Print("Ingrese el ID del contacto: ")
+			var idContact int
+			fmt.Scanln(&idContact)
+			handlers.GetContactByID(db, idContact)
+		case 3:
+			newContact := inputContactDetails(option)
+			handlers.CreateContact(db, newContact)
+			handlers.ListContacts(db)
+		case 4:
+			updateContact := inputContactDetails(option)
+			handlers.UpdateContact(db, updateContact)
+			handlers.ListContacts(db)
+		case 5:
+			fmt.Print("Ingrese el ID del contacto que quiere eliminar: ")
+			var idContact int
+			fmt.Scanln(&idContact)
+			handlers.DeleteContact(db, idContact)
+			handlers.ListContacts(db)
+		case 6:
+			fmt.Println("Saliendo del programa...")
+			return
+		default:
+			fmt.Println("Opción no válida. Por favor, seleccione una opción válida.")
+		}
+	}
+}
+
+func inputContactDetails(option int) models.Contact {
+	// Leer la entrada del usuario utilizando bufio
+	reader := bufio.NewReader(os.Stdin)
+
+	var contact models.Contact
+
+	if option == 4 {
+		fmt.Print("Ingrese el ID del contacto que quiere editar: ")
+		var idContact int
+		fmt.Scanln(&idContact)
+
+		contact.Id = idContact
 	}
 
-	handlers.CreateContact(db, newContact)
+	fmt.Print("Ingrese el nombre del contacto: ")
+	name, _ := reader.ReadString('\n')
+	contact.Name = strings.TrimSpace(name)
 
-	handlers.ListContacts(db)
+	fmt.Print("Ingrese el correo del contacto: ")
+	email, _ := reader.ReadString('\n')
+	contact.Email = strings.TrimSpace(email)
 
-	// handlers.GetContactByID(db, 2)
+	fmt.Print("Ingrese el teléfono del contacto: ")
+	phone, _ := reader.ReadString('\n')
+	contact.Phone = strings.TrimSpace(phone)
+
+	return contact
 }
