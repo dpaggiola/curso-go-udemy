@@ -1,6 +1,6 @@
 package models
 
-import "apirest/db"
+import "gorm/db"
 
 type User struct {
 	Id       int64	`json:"id"`
