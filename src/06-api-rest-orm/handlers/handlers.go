@@ -1,28 +1,43 @@
 package handlers
 
 import (
-	"gorm/models"
 	"encoding/json"
 	"fmt"
+	"gorm/db"
+	"gorm/models"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"gorm.io/gorm"
 )
 
 func GetUsers(rw http.ResponseWriter, r *http.Request) {
-	if users, err := models.ListUsers(); err != nil {
-		models.SendNotFound(rw)
+	users := models.Users{}
+	db.Database.Find(&users)
+	sendData(rw, users, http.StatusOK)
+}
+
+
+func GetUser(rw http.ResponseWriter, r *http.Request) {
+	if user, err := getUserById(r); err != nil {
+		sendError(rw, http.StatusNotFound)
 	} else {
-		models.SendData(rw, users)
+		sendData(rw, user, http.StatusOK)
 	}
 }
 
-func GetUser(rw http.ResponseWriter, r *http.Request) {
-	if user, err := getUserByRequest(r); err != nil {
-		models.SendNotFound(rw)
+
+func getUserById(r *http.Request) (models.User, *gorm.DB){
+	vars := mux.Vars(r)
+	userId, _ := strconv.Atoi(vars["id"])
+
+	user := models.User{}
+	
+	if err := db.Database.First(&user, userId); err.Error != nil {
+		return user, err
 	} else {
-		models.SendData(rw, user)
+		return user, nil
 	}
 }
 
@@ -33,10 +48,10 @@ func CreateUser(rw http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	if err := decoder.Decode(&user); err != nil {
-		models.SendUnprocessableEntity(rw)
+		sendError(rw, http.StatusUnprocessableEntity)
 	} else {
-		user.Save()
-		models.SendData(rw, user)
+		db.Database.Save(&user)
+		sendData(rw, user, http.StatusCreated)
 	} 
 
 	output, _ := json.Marshal(user)
@@ -47,41 +62,29 @@ func UpdateUser(rw http.ResponseWriter, r *http.Request) {
 	// Obtener registro
 	var userId int64
 
-	if user, err := getUserByRequest(r); err != nil {
-		models.SendNotFound(rw)
+	if user_ant, err := getUserById(r); err != nil {
+		sendError(rw, http.StatusNotFound)
 	} else {
-		userId = user.Id
+		userId = user_ant.Id
+	
+		user := models.User{}
+		decoder := json.NewDecoder(r.Body)
+	
+		if err := decoder.Decode(&user); err != nil {
+			sendError(rw, http.StatusUnprocessableEntity)
+		} else {
+			user.Id = userId
+			db.Database.Save(&user)
+			sendData(rw, user, http.StatusOK)
+		} 
 	}
-
-	user := models.User{}
-	decoder := json.NewDecoder(r.Body)
-
-	if err := decoder.Decode(&user); err != nil {
-		models.SendUnprocessableEntity(rw)
-	} else {
-		user.Id = userId
-		user.Save()
-		models.SendData(rw, user)
-	} 
 }
 
 func DeleteUser(rw http.ResponseWriter, r *http.Request) {
-	if user, err := getUserByRequest(r); err != nil {
-		models.SendNotFound(rw)
+	if user, err := getUserById(r); err != nil {
+		sendError(rw, http.StatusNotFound)
 	} else {
-		user.Delete()
-		models.SendData(rw, user)
-	}
-}
-
-func getUserByRequest(r *http.Request) (models.User, error){
-	// Obtener ID
-	vars := mux.Vars(r)
-	userId, _ := strconv.Atoi(vars["id"])
-
-	if user, err := models.GetUser(userId); err != nil {
-		return *user, err
-	} else {
-		return *user, nil
+		db.Database.Delete(&user)
+		sendData(rw, user, http.StatusOK)
 	}
 }

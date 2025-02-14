@@ -9,6 +9,9 @@ import (
 )
 
 func main() {
+
+	// models.MigrarUser()
+
 	// Rutas
 	mux := mux.NewRouter()
 
