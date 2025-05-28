@@ -1,6 +1,5 @@
 # GOLANG: Curso profesional de Go - De cero a Master 2024 - UDEMY
-
-
+## UPDATE: Se agrega el Curso de Go Avanzado: REST y WebSockets de Platzi
 ## Descripción
 
 **Go es uno de los lenguajes mejor pagados según Stack Overflow**
