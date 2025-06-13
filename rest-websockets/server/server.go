@@ -6,9 +6,11 @@ import (
 	"log"
 	"net/http"
 
+	database "platzi.com/go/rest-ws/database"
+	repository "platzi.com/go/rest-ws/repository"
+
 	"github.com/gorilla/mux"
-	"platzi.com/go/rest-ws/database"
-	"platzi.com/go/rest-ws/repository"
+	websocket "platzi.com/go/rest-ws/websocket"
 )
 
 type Config struct {
@@ -19,15 +21,21 @@ type Config struct {
 
 type Server interface {
 	Config() *Config
+	Hub() *websocket.Hub
 }
 
 type Broker struct {
 	config *Config
 	router *mux.Router
+	hub *websocket.Hub
 }
 
 func (b *Broker) Config() *Config {
 	return b.config
+}
+
+func (b *Broker) Hub() *websocket.Hub {
+	return b.hub
 }
 
 func NewServer(ctx context.Context, config *Config) (*Broker, error) {
@@ -40,22 +48,24 @@ func NewServer(ctx context.Context, config *Config) (*Broker, error) {
 	if config.DatabaseUrl == "" {
 		return nil, errors.New("DatabaseUrl is required")
 	}
-	
+
 	broker := &Broker{
 		config: config,
 		router: mux.NewRouter(),
+		hub: websocket.NewHUb(),
 	}
 
 	return broker, nil
 }
 
-func (b *Broker) Start(binder func (s Server, r *mux.Router)) {
+func (b *Broker) Start(binder func(s Server, r *mux.Router)) {
 	b.router = mux.NewRouter()
 	binder(b, b.router)
 	repo, err := database.NewPostresRepository(b.config.DatabaseUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
+	go b.hub.Run()
 	repository.SetRepository(repo)
 
 	log.Println("Starting server on port", b.Config().Port)

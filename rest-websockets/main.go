@@ -39,8 +39,6 @@ func main() {
 }
 
 func BindRoutes(s server.Server, r *mux.Router) {
-	hub := websocket.NewHUb()
-
 	r.Use(middleware.CheckAuthMiddleware(s))
 
 	r.HandleFunc("/", handlers.HomeHandler(s)).Methods(http.MethodGet)
@@ -54,6 +52,5 @@ func BindRoutes(s server.Server, r *mux.Router) {
 	r.HandleFunc("/posts", handlers.DeletePostHandler(s)).Methods(http.MethodDelete)
 	r.HandleFunc("/posts", handlers.ListPostHandler(s)).Methods(http.MethodGet)
 
-	go hub.Run()
-	r.HandleFunc("/ws", hub.HandleWebSocket)
+	r.HandleFunc("/ws", s.Hub().HandleWebSocket)
 }
